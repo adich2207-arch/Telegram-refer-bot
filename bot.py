@@ -15,11 +15,11 @@ cursor.execute("""
 CREATE TABLE IF NOT EXISTS users (
     user_id INTEGER PRIMARY KEY,
     ref_by INTEGER,
-    referrals INTEGER DEFAULT 0
+    referrals INTEGER DEFAULT 0,
+    balance REAL DEFAULT 0
 )
 """)
 conn.commit()
-
 # Add user
 def add_user(user_id, ref_by=None):
     cursor.execute("SELECT * FROM users WHERE user_id=?", (user_id,))
