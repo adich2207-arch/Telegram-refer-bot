@@ -1,3 +1,4 @@
+from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 import sqlite3
 from telegram import Update
 from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes
@@ -48,12 +49,22 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     add_user(user_id, ref_by)
 
-    ref_link = f"https://t.me/{BOT_USERNAME}?start={user_id}"
+    ref_link = f"https://t.me/YOUR_BOT_USERNAME?start={user_id}"
+
+    # 🔘 Buttons
+    keyboard = [
+        [InlineKeyboardButton("💰 Check Balance", callback_data="balance")],
+        [InlineKeyboardButton("📤 Refer Friends", url=ref_link)],
+        [InlineKeyboardButton("ℹ️ How to Earn", callback_data="help")]
+    ]
+
+    reply_markup = InlineKeyboardMarkup(keyboard)
 
     await update.message.reply_text(
-        f"👋 Welcome!\n\n"
-        f"Your referral link:\n{ref_link}\n\n"
-        f"Invite friends and earn rewards!"
+        f"🔥 Welcome to Earn Bot!\n\n"
+        f"💸 Earn money by referring friends\n"
+        f"👥 Your referral link:\n{ref_link}",
+        reply_markup=reply_markup
     )
 
 # Check referrals
