@@ -61,11 +61,14 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     reply_markup = InlineKeyboardMarkup(keyboard)
 
     await update.message.reply_text(
-        f"🔥 Welcome to Earn Bot!\n\n"
-        f"💸 Earn money by referring friends\n"
-        f"👥 Your referral link:\n{ref_link}",
-        reply_markup=reply_markup
-    )
+    f"👋 Welcome to Earn Bot!\n\n"
+    f"💰 Earn real rewards by inviting your friends.\n"
+    f"🎯 Simple, transparent, and easy to use.\n\n"
+    f"🔗 Your personal referral link:\n{ref_link}\n\n"
+    f"📊 Use /balance to track your earnings\n"
+    f"ℹ️ Use the buttons below to get started\n\n"
+    f"🚀 Start sharing your link and grow your earnings today!"
+)
 
 # Check referrals
 async def stats(update: Update, context: ContextTypes.DEFAULT_TYPE):
