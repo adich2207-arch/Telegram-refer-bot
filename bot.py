@@ -79,14 +79,24 @@ def run_flask():
     app.run(host='0.0.0.0', port=10000)
 
 # Run bot
+import asyncio
+import threading
+
 def main():
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
+
     app_bot = ApplicationBuilder().token(TOKEN).build()
 
     app_bot.add_handler(CommandHandler("start", start))
     app_bot.add_handler(CommandHandler("stats", stats))
 
     threading.Thread(target=run_flask).start()
-    app_bot.run_polling()
+
+    loop.run_until_complete(app_bot.initialize())
+    loop.run_until_complete(app_bot.start())
+    loop.run_until_complete(app_bot.updater.start_polling())
+    loop.run_forever()
 
 if __name__ == "__main__":
     main()
