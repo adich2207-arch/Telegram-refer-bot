@@ -49,7 +49,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     add_user(user_id, ref_by)
 
-    ref_link = f"https://t.me/YOUR_BOT_USERNAME?start={user_id}"
+    ref_link = f"https://t.me/@Refer_And_Earn11_bot?start={user_id}"
 
     # 🔘 Buttons
     keyboard = [
