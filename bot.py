@@ -4,8 +4,8 @@ from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes
 from flask import Flask
 import threading
 
-TOKEN = "YOUR_BOT_TOKEN"
-BOT_USERNAME = "YOUR_BOT_USERNAME"
+TOKEN = "8603043590:AAHzOY5gfuf8_DrjMvDf6mvMluXUp0bGU1g"
+BOT_USERNAME = "@Refer_And_Earn11_bot"
 
 # Database setup
 conn = sqlite3.connect("users.db", check_same_thread=False)
