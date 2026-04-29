@@ -55,7 +55,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     add_user(user_id, ref_by)
 
-  ref_link = f"https://t.me/{BOT_USERNAME}?start={user_id}"
+    ref_link = f"https://t.me/{BOT_USERNAME}?start={user_id}"
 
     keyboard = [
         [InlineKeyboardButton("💰 Check Balance", callback_data="balance")],
@@ -67,10 +67,8 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     await update.message.reply_text(
         f"👋 Welcome to Earn Bot!\n\n"
-        f"💰 Earn rewards by inviting friends.\n"
-        f"🎯 Simple and easy to use.\n\n"
-        f"🔗 Your referral link:\n{ref_link}\n\n"
-        f"📊 Click buttons below to get started 🚀",
+        f"💰 Earn rewards by inviting friends.\n\n"
+        f"🔗 Your referral link:\n{ref_link}",
         reply_markup=reply_markup
     )
 
