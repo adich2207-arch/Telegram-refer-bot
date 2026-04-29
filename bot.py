@@ -1,3 +1,4 @@
+ADMIN_CHANNEL = "@withdrawal_panel1"
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes, CallbackQueryHandler
 import sqlite3
@@ -82,6 +83,44 @@ async def stats(update: Update, context: ContextTypes.DEFAULT_TYPE):
     count = data[0] if data else 0
 
     await update.message.reply_text(f"📊 Your referrals: {count}")
+    async def withdraw(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    user_id = update.effective_user.id
+
+    if not context.args:
+        await update.message.reply_text("❌ Usage: /withdraw amount")
+        return
+
+    amount = float(context.args[0])
+
+    cursor.execute("SELECT balance FROM users WHERE user_id=?", (user_id,))
+    data = cursor.fetchone()
+
+    balance = data[0] if data else 0
+
+    if amount > balance:
+        await update.message.reply_text("❌ Insufficient balance")
+        return
+
+    # deduct balance
+    cursor.execute(
+        "UPDATE users SET balance = balance - ? WHERE user_id=?",
+        (amount, user_id)
+    )
+    conn.commit()
+
+    # send request to admin channel
+    text = f"""
+💸 NEW WITHDRAW REQUEST
+
+👤 User ID: {user_id}
+💰 Amount: ₹{amount}
+
+✅ Approve manually & send payment
+"""
+
+    await context.bot.send_message(chat_id=ADMIN_CHANNEL, text=text)
+
+    await update.message.reply_text("✅ Withdraw request sent for approval")
 
 # ---------------- BUTTON HANDLER ----------------
 async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -128,6 +167,7 @@ def main():
     app_bot.add_handler(CommandHandler("start", start))
     app_bot.add_handler(CommandHandler("stats", stats))
     app_bot.add_handler(CallbackQueryHandler(button_handler))
+    app_bot.add_handler(CommandHandler("withdraw", withdraw))
 
     threading.Thread(target=run_flask).start()
 
