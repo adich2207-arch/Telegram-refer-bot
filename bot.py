@@ -83,7 +83,7 @@ async def stats(update: Update, context: ContextTypes.DEFAULT_TYPE):
     count = data[0] if data else 0
 
     await update.message.reply_text(f"📊 Your referrals: {count}")
-    async def withdraw(update: Update, context: ContextTypes.DEFAULT_TYPE):
+async def withdraw(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = update.effective_user.id
 
     if not context.args:
@@ -101,26 +101,24 @@ async def stats(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text("❌ Insufficient balance")
         return
 
-    # deduct balance
     cursor.execute(
         "UPDATE users SET balance = balance - ? WHERE user_id=?",
         (amount, user_id)
     )
     conn.commit()
 
-    # send request to admin channel
     text = f"""
 💸 NEW WITHDRAW REQUEST
 
 👤 User ID: {user_id}
 💰 Amount: ₹{amount}
 
-✅ Approve manually & send payment
+⚠️ Please approve manually
 """
 
     await context.bot.send_message(chat_id=ADMIN_CHANNEL, text=text)
 
-    await update.message.reply_text("✅ Withdraw request sent for approval")
+    await update.message.reply_text("✅ Withdrawal request sent")
 
 # ---------------- BUTTON HANDLER ----------------
 async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
