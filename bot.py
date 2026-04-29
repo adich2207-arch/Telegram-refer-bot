@@ -6,8 +6,8 @@ import threading
 import asyncio
 
 # 🔒 PUT YOUR NEW TOKEN HERE (DON’T USE OLD EXPOSED ONE)
-TOKEN = "YOUR_NEW_BOT_TOKEN"
-BOT_USERNAME = "Refer_And_Earn11_bot"  # بدون @
+TOKEN = "8603043590:AAHzOY5gfuf8_DrjMvDf6mvMluXUp0bGU1g"
+BOT_USERNAME = "@Refer_And_Earn11_bot"  # بدون @
 
 # ---------------- DATABASE ----------------
 conn = sqlite3.connect("users.db", check_same_thread=False)
@@ -55,7 +55,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     add_user(user_id, ref_by)
 
-    ref_link = f"https://t.me/{BOT_USERNAME}?start={user_id}"
+    ref_link = f"https://t.me/{Refer_And_Earn11_bot}?start={user_id}"
 
     keyboard = [
         [InlineKeyboardButton("💰 Check Balance", callback_data="balance")],
