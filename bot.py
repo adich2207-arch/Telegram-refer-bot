@@ -1,7 +1,7 @@
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 import sqlite3
 from telegram import Update
-from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes
+from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes, CallbackQueryHandler
 from flask import Flask
 import threading
 
@@ -49,7 +49,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     add_user(user_id, ref_by)
 
-    ref_link = f"https://t.me/@Refer_And_Earn11_bot?start={user_id}"
+    ref_link = f"https://t.me/Refer_And_Earn11_bot?start={user_id}"
 
     # 🔘 Buttons
     keyboard = [
@@ -59,15 +59,15 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     ]
 
     reply_markup = InlineKeyboardMarkup(keyboard)
-
-    await update.message.reply_text(
+await update.message.reply_text(
     f"👋 Welcome to Earn Bot!\n\n"
     f"💰 Earn real rewards by inviting your friends.\n"
     f"🎯 Simple, transparent, and easy to use.\n\n"
     f"🔗 Your personal referral link:\n{ref_link}\n\n"
     f"📊 Use /balance to track your earnings\n"
     f"ℹ️ Use the buttons below to get started\n\n"
-    f"🚀 Start sharing your link and grow your earnings today!"
+    f"🚀 Start sharing your link and grow your earnings today!",
+    reply_markup=reply_markup   # ✅ THIS LINE FIXES IT
 )
 
 # Check referrals
@@ -81,6 +81,29 @@ async def stats(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(
         f"📊 Your referrals: {count}"
     )
+async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    query = update.callback_query
+    await query.answer()
+
+    if query.data == "balance":
+        user_id = query.from_user.id
+
+        cursor.execute("SELECT balance, referrals FROM users WHERE user_id=?", (user_id,))
+        data = cursor.fetchone()
+
+        bal, refs = data if data else (0, 0)
+
+        await query.message.reply_text(
+            f"💰 Balance: ₹{bal}\n👥 Referrals: {refs}"
+        )
+
+    elif query.data == "help":
+        await query.message.reply_text(
+            "📌 How to Earn:\n"
+            "1. Share your referral link\n"
+            "2. Friends join using your link\n"
+            "3. You earn money 💰"
+        )
 
 # Flask app to keep Render alive
 app = Flask(__name__)
@@ -104,6 +127,7 @@ def main():
 
     app_bot.add_handler(CommandHandler("start", start))
     app_bot.add_handler(CommandHandler("stats", stats))
+app_bot.add_handler(CallbackQueryHandler(button_handler))
 
     threading.Thread(target=run_flask).start()
 
