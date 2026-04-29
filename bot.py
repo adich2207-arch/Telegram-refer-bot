@@ -157,23 +157,14 @@ def run_flask():
 
 # ---------------- MAIN ----------------
 def main():
-    loop = asyncio.new_event_loop()
-    asyncio.set_event_loop(loop)
-
     app_bot = ApplicationBuilder().token(TOKEN).build()
 
     app_bot.add_handler(CommandHandler("start", start))
     app_bot.add_handler(CommandHandler("stats", stats))
-    app_bot.add_handler(CallbackQueryHandler(button_handler))
     app_bot.add_handler(CommandHandler("withdraw", withdraw))
+    app_bot.add_handler(CallbackQueryHandler(button_handler))
 
-    threading.Thread(target=run_flask).start()
+    print("Bot is running...")
 
-    loop.run_until_complete(app_bot.initialize())
-    loop.run_until_complete(app_bot.start())
-    loop.run_until_complete(app_bot.updater.start_polling())
-    loop.run_forever()
-
-# ---------------- RUN ----------------
-if __name__ == "__main__":
-    main()
+    app_bot.run_polling()
+   
