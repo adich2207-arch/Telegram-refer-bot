@@ -1,14 +1,15 @@
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
-import sqlite3
-from telegram import Update
 from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes, CallbackQueryHandler
+import sqlite3
 from flask import Flask
 import threading
+import asyncio
 
-TOKEN = "8603043590:AAHzOY5gfuf8_DrjMvDf6mvMluXUp0bGU1g"
-BOT_USERNAME = "@Refer_And_Earn11_bot"
+# 🔒 PUT YOUR NEW TOKEN HERE (DON’T USE OLD EXPOSED ONE)
+TOKEN = "YOUR_NEW_BOT_TOKEN"
+BOT_USERNAME = "Refer_And_Earn11_bot"  # بدون @
 
-# Database setup
+# ---------------- DATABASE ----------------
 conn = sqlite3.connect("users.db", check_same_thread=False)
 cursor = conn.cursor()
 
@@ -21,37 +22,41 @@ CREATE TABLE IF NOT EXISTS users (
 )
 """)
 conn.commit()
-# Add user
+
+# ---------------- ADD USER ----------------
 def add_user(user_id, ref_by=None):
     cursor.execute("SELECT * FROM users WHERE user_id=?", (user_id,))
     if cursor.fetchone() is None:
         cursor.execute(
-            "INSERT INTO users (user_id, ref_by, referrals) VALUES (?, ?, 0)",
+            "INSERT INTO users (user_id, ref_by, referrals, balance) VALUES (?, ?, 0, 0)",
             (user_id, ref_by)
         )
         conn.commit()
 
-        # Increase ref count
+        # reward referrer
         if ref_by:
+            reward = 2  # ₹ per referral
             cursor.execute(
-                "UPDATE users SET referrals = referrals + 1 WHERE user_id=?",
-                (ref_by,)
+                "UPDATE users SET referrals = referrals + 1, balance = balance + ? WHERE user_id=?",
+                (reward, ref_by)
             )
             conn.commit()
 
-# Start command
+# ---------------- START ----------------
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = update.effective_user.id
 
     ref_by = None
     if context.args:
-        ref_by = int(context.args[0])
+        try:
+            ref_by = int(context.args[0])
+        except:
+            ref_by = None
 
     add_user(user_id, ref_by)
 
-    ref_link = f"https://t.me/Refer_And_Earn11_bot?start={user_id}"
+    ref_link = f"https://t.me/{BOT_USERNAME}?start={user_id}"
 
-    # 🔘 Buttons
     keyboard = [
         [InlineKeyboardButton("💰 Check Balance", callback_data="balance")],
         [InlineKeyboardButton("📤 Refer Friends", url=ref_link)],
@@ -59,35 +64,35 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     ]
 
     reply_markup = InlineKeyboardMarkup(keyboard)
-await update.message.reply_text(
-    f"👋 Welcome to Earn Bot!\n\n"
-    f"💰 Earn real rewards by inviting your friends.\n"
-    f"🎯 Simple, transparent, and easy to use.\n\n"
-    f"🔗 Your personal referral link:\n{ref_link}\n\n"
-    f"📊 Use /balance to track your earnings\n"
-    f"ℹ️ Use the buttons below to get started\n\n"
-    f"🚀 Start sharing your link and grow your earnings today!",
-    reply_markup=reply_markup   # ✅ THIS LINE FIXES IT
-)
 
-# Check referrals
+    await update.message.reply_text(
+        f"👋 Welcome to Earn Bot!\n\n"
+        f"💰 Earn rewards by inviting friends.\n"
+        f"🎯 Simple and easy to use.\n\n"
+        f"🔗 Your referral link:\n{ref_link}\n\n"
+        f"📊 Click buttons below to get started 🚀",
+        reply_markup=reply_markup
+    )
+
+# ---------------- STATS ----------------
 async def stats(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = update.effective_user.id
+
     cursor.execute("SELECT referrals FROM users WHERE user_id=?", (user_id,))
     data = cursor.fetchone()
 
     count = data[0] if data else 0
 
-    await update.message.reply_text(
-        f"📊 Your referrals: {count}"
-    )
+    await update.message.reply_text(f"📊 Your referrals: {count}")
+
+# ---------------- BUTTON HANDLER ----------------
 async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     await query.answer()
 
-    if query.data == "balance":
-        user_id = query.from_user.id
+    user_id = query.from_user.id
 
+    if query.data == "balance":
         cursor.execute("SELECT balance, referrals FROM users WHERE user_id=?", (user_id,))
         data = cursor.fetchone()
 
@@ -105,20 +110,17 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
             "3. You earn money 💰"
         )
 
-# Flask app to keep Render alive
+# ---------------- FLASK (KEEP ALIVE) ----------------
 app = Flask(__name__)
 
-@app.route('/')
+@app.route("/")
 def home():
     return "Bot is running!"
 
 def run_flask():
-    app.run(host='0.0.0.0', port=10000)
+    app.run(host="0.0.0.0", port=10000)
 
-# Run bot
-import asyncio
-import threading
-
+# ---------------- MAIN ----------------
 def main():
     loop = asyncio.new_event_loop()
     asyncio.set_event_loop(loop)
@@ -127,7 +129,7 @@ def main():
 
     app_bot.add_handler(CommandHandler("start", start))
     app_bot.add_handler(CommandHandler("stats", stats))
-app_bot.add_handler(CallbackQueryHandler(button_handler))
+    app_bot.add_handler(CallbackQueryHandler(button_handler))
 
     threading.Thread(target=run_flask).start()
 
@@ -136,5 +138,6 @@ app_bot.add_handler(CallbackQueryHandler(button_handler))
     loop.run_until_complete(app_bot.updater.start_polling())
     loop.run_forever()
 
+# ---------------- RUN ----------------
 if __name__ == "__main__":
     main()
